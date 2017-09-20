@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        #barcontainer {
+            position: relative;
+            border-radius: 5px 5px 0 0;
+            margin: 0 auto;
+            min-height: 600px;
+            max-height: 1000px;
+            border: solid 1px;
+            z-index: 1;
+        }
+
+        .bar {
+            position: absolute;
+            display: inline-block;
+            bottom: 0;
+            border: 1px solid black;
+            border-radius: 6px 6px 0 0;
+            background: #663399;
+            text-align: center;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="histogram">
+        <div id='barcontainer'>
+            
+        </div>
+    </div>
+    <script>
+        (function() {
+            generateData = function (xRange, yRange) {
+                var dataPoints = [];
+                for (var i = 0; i < xRange; i++) {
+                    var obj = {
+                        x: i ,
+                        y: Math.floor(Math.random() * (yRange - xRange + 1) * 20)
+                    }
+                    dataPoints.push(obj);
+                }
+                return dataPoints;
+            };
+
+            populateHistogram = function (data, width) {
+                var barsHtml = '';
+                for (var i = 0; i < data.length; i++) {
+                    var left = width * i;
+                    barsHtml += '<div class="bar" style="height:'+data[i].y+'px; width: '+width+'%; left: '+left+'%">'+data[i].y+'</div>';
+                } 
+                document.getElementById('barcontainer').innerHTML = barsHtml;
+            };
+
+            createHistogram = function (dataPoints, width, minBarWidth) {
+                document.getElementById('barcontainer').style.width = width + '%';
+                var numberOfDataPoints = dataPoints.length;
+                var dataToPopulate = dataPoints;
+                var barWidth = minBarWidth;
+                if (numberOfDataPoints < (width / minBarWidth)) {
+                    // More space. Increase minWidth
+                    barWidth = width / numberOfDataPoints;
+                } else if (numberOfDataPoints > (width / minBarWidth)) {
+                    // Less Space. Rearrange Data points.
+                    dataToPopulate = [];
+                    var clubValue = Math.floor(minBarWidth / numberOfDataPoints) + 1;    
+                    for (var i=0,j=0; i < dataPoints.length; i = i + clubValue,j++) {
+                        dataToPopulate[j] = {
+                          x : j,
+                          y : dataPoints[i].y   
+                        };
+                        for (var k=1; k< clubValue; k++) {
+                            if(dataPoints[i+k]) {
+                                dataToPopulate[j].y += dataPoints[i+k].y;
+                            } else {
+                                dataToPopulate[j].y += dataToPopulate[j].y;
+                            }
+                        }
+                    }  
+                    barWidth = width /dataToPopulate.length; 
+                }
+
+                populateHistogram(dataToPopulate, barWidth);
+            };
+
+            var dataPoints = generateData(10,14);
+            // Correctly fits
+            // createHistogram(dataPoints, 100, 10);
+
+            // More space than dataPoints
+            // createHistogram(dataPoints, 100, 8);
+
+            // Less Space than dataPoints
+            createHistogram(dataPoints, 100, 32);
+        })();
+    </script>
+</body>
+</html>
